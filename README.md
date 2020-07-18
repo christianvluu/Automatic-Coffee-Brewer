@@ -17,4 +17,4 @@ Aimed at Brewing Coffee on a mass scale.
 - TFT Touchscreen (for Raspberry Pi)
 
 ## Credits
-- Created and maintained by Christian Luu
+Created and maintained by Christian Luu
