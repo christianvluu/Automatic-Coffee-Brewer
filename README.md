@@ -18,3 +18,4 @@ Aimed at Brewing Coffee on a mass scale.
 
 ## Credits
 Created and maintained by Christian Luu
+PyQt5 Tutorials is completed while following the guide on https://realpython.com/python-pyqt-gui-calculator/
