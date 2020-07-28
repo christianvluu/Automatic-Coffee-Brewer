@@ -6,7 +6,7 @@ Aimed at Brewing Coffee on a mass scale.
 
 ## Dependencies
 - Python3
-- PyQt
+- PyQt5
 - Numpy
 - Matplotlib
 
