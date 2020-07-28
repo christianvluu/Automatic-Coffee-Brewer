@@ -8,7 +8,6 @@ from functools import partial
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QWidget
-import PyQt5
 
 class Calculator(QMainWindow): # main calculator class
     def __init__(self):
@@ -18,7 +17,7 @@ class Calculator(QMainWindow): # main calculator class
 
         # set layout + central widget
         self.generalLayout = QVBoxLayout()
-        self._centralWidget = QWidget(self)
+        self._centralWidget = QWidget()
         self._centralWidget.setLayout(self.generalLayout)
         self.setCentralWidget(self._centralWidget) # self.setCentralWidget is a something called in the super() class
 
