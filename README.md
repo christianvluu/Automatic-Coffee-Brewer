@@ -2,6 +2,7 @@
 
 ## Introduction
 This project aims to provide a basic controller platform for heating chambers through resistive heaters. It includes data-logging, and a GUI via a touchscreen. 
+
 Aimed at Brewing Coffee on a mass scale.
 
 ## Dependencies
@@ -18,4 +19,5 @@ Aimed at Brewing Coffee on a mass scale.
 
 ## Credits
 Created and maintained by Christian Luu
+
 PyQt5 Tutorials is completed while following the guide on https://realpython.com/python-pyqt-gui-calculator/
