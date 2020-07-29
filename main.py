@@ -6,6 +6,7 @@ from PyQt5.QtGui import *
 from login_screen import *
 from main_screen import *
 from manual_brew_screen import *
+from semi_auto__brew_screen import *
 
 class BrewModel(object):
     def __init__(self):
@@ -47,13 +48,16 @@ class BrewController(object):
             # do something
             pass
         elif (screen == "semi_auto_brew_screen" and self._model.showingScreen == "main_screen"):
-            # do something
+            self._changeScreenFromMainToSemiAutoBrew()
             pass
         self._model.showingScreen = screen
         self._view.screenSelector(self._model.showingScreen)
-        self.__init__(self._view, self._model)
+        self.__init__(self._view, self._model) # reconnects buttons, reset controller, keeps model values
         print("user: ", self._model.userName)
         print("pin: ", self._model.userPin)
+    
+    def _changeScreenFromMainToSemiAutoBrew(self):
+        return True
     
     def _changeScreenFromMainToManualBrew(self):
         return True
@@ -61,6 +65,15 @@ class BrewController(object):
     def _changeScreenFromLoginToMain(self):
         self._model.userName = self._view.loginScreen.nameEdit.text()
         self._model.userPin = self._view.loginScreen.pinEdit.text()
+
+class ManualBrewMode(object):
+    # this obj gets called when manual brew screen is showing
+    # it should store functions responsible for reacting to# the buttons
+    # BUT the connecting signals to slots (butons to functions) should NOT be
+    # here BUT be in the main controller class
+    # general store all the necessary stuff to make the Controller class cleaner
+    def __init__(self, controller):
+        pass 
 
 class BrewView(QMainWindow):
     windowXSize = 970
@@ -82,6 +95,8 @@ class BrewView(QMainWindow):
             self._showMainScreen()
         elif (showingScreen == "manual_brew_screen"):
             self._showManualBrewScreen()
+        elif (showingScreen == "semi_auto_brew_screen"):
+            self._showSemiAutoBrewScreen()
 
     def _showLoginScreen(self):
         self.loginScreen = LoginScreen()
@@ -120,6 +135,9 @@ class BrewView(QMainWindow):
         self.manualBrewScreen = ManualBrewScreen()
         self.manualBrewScreen.setupUi(view)
 
+    def _showSemiAutoBrewScreen(self):
+        self.semiAutoBrewScreen = SemiAutoBrewScreen()
+        self.semiAutoBrewScreen.setupUi(view)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

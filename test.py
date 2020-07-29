@@ -21,6 +21,7 @@ class MainApp(QMainWindow):
         self.generalLayout.addWidget(self.button1)
 
     def doButton1Stuff(self):
+        self.button1.setChecked(True)
         print(self.button1.isChecked())
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>640</width>
-    <height>480</height>
+    <height>468</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -76,6 +76,21 @@
     <layout class="QGridLayout" name="gridLayout">
      <item row="3" column="1">
       <widget class="QLineEdit" name="extractionPumpTimeEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>100</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -116,6 +131,9 @@
          <width>100</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
        <property name="readOnly">
         <bool>true</bool>
@@ -175,6 +193,9 @@
          <width>100</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
        <property name="readOnly">
         <bool>true</bool>
@@ -243,6 +264,9 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -255,6 +279,9 @@
          <width>100</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
        <property name="readOnly">
         <bool>true</bool>
