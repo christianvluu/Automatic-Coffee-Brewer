@@ -38,7 +38,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="titleLabel">
        <property name="font">
         <font>
          <pointsize>18</pointsize>
@@ -88,20 +88,20 @@
       </spacer>
      </item>
      <item row="0" column="3">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="pinLabel">
        <property name="text">
-        <string>Pin:</string>
+        <string>Pin: </string>
        </property>
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="nameEdit"/>
      </item>
      <item row="0" column="4">
-      <widget class="QLineEdit" name="lineEdit_2"/>
+      <widget class="QLineEdit" name="pinEdit"/>
      </item>
      <item row="0" column="1">
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="nameLabel">
        <property name="text">
         <string>Name:</string>
        </property>
@@ -123,7 +123,7 @@
      <item row="2" column="4">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item alignment="Qt::AlignTop">
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="pinIsVisibleLabel">
          <property name="font">
           <font>
            <pointsize>8</pointsize>
@@ -136,7 +136,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="loginButton">
          <property name="text">
           <string>Log in</string>
          </property>

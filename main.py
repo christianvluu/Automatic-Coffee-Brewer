@@ -5,6 +5,7 @@ from functools import partial
 from PyQt5.QtGui import *
 from login_screen import *
 from main_screen import *
+from manual_brew_screen import *
 
 class BrewModel(object):
     def __init__(self):
@@ -31,19 +32,35 @@ class BrewController(object):
     
     def _connectButtons(self):
         if (self._model.showingScreen == "login_screen"):
-            self._view.loginScreen.pushButton.clicked.connect(self._changeScreenFromLoginToMain)
+            self._view.loginScreen.loginButton.clicked.connect(partial(self._changeScreen, "main_screen"))
+        elif (self._model.showingScreen == "main_screen"):
+            self._view.mainScreen.manualBrewButton.clicked.connect(partial(self._changeScreen, "manual_brew_screen"))
+            self._view.mainScreen.profileBrewButton.clicked.connect(partial(self._changeScreen, "profile_brew_screen"))
+            self._view.mainScreen.semiAutoBrewButton.clicked.connect(partial(self._changeScreen, "semi_auto_brew_screen"))
     
-    def _changeScreen(self, screen):
+    def _changeScreen(self, screen): # calls function to do stuff appropriate to the button pressed
+        if (screen == "main_screen" and self._model.showingScreen == "login_screen"):
+            self._changeScreenFromLoginToMain()
+        elif (screen == "manual_brew_screen" and self._model.showingScreen == "main_screen"):
+            self._changeScreenFromMainToManualBrew()
+        elif (screen == "profile_brew_screen" and self._model.showingScreen == "main_screen"):
+            # do something
+            pass
+        elif (screen == "semi_auto_brew_screen" and self._model.showingScreen == "main_screen"):
+            # do something
+            pass
         self._model.showingScreen = screen
         self._view.screenSelector(self._model.showingScreen)
         self.__init__(self._view, self._model)
         print("user: ", self._model.userName)
         print("pin: ", self._model.userPin)
+    
+    def _changeScreenFromMainToManualBrew(self):
+        return True
 
     def _changeScreenFromLoginToMain(self):
-        self._model.userName = self._view.loginScreen.lineEdit.text()
-        self._model.userPin = self._view.loginScreen.lineEdit_2.text()
-        self._changeScreen("main_screen")
+        self._model.userName = self._view.loginScreen.nameEdit.text()
+        self._model.userPin = self._view.loginScreen.pinEdit.text()
 
 class BrewView(QMainWindow):
     windowXSize = 970
@@ -63,6 +80,8 @@ class BrewView(QMainWindow):
             self._showLoginScreen()
         elif (showingScreen == "main_screen"):
             self._showMainScreen()
+        elif (showingScreen == "manual_brew_screen"):
+            self._showManualBrewScreen()
 
     def _showLoginScreen(self):
         self.loginScreen = LoginScreen()
@@ -96,6 +115,10 @@ class BrewView(QMainWindow):
     def _showMainScreen(self):
         self.mainScreen = MainScreen()
         self.mainScreen.setupUi(view)
+    
+    def _showManualBrewScreen(self):
+        self.manualBrewScreen = ManualBrewScreen()
+        self.manualBrewScreen.setupUi(view)
 
 
 if __name__ == '__main__':
