@@ -124,12 +124,6 @@ class ManualBrewScreen(object):
         self.tempLabel.setFont(font)
         self.tempLabel.setObjectName("tempLabel")
         self.gridLayout_2.addWidget(self.tempLabel, 0, 0, 1, 2, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
-        self.backButton = QtWidgets.QPushButton(self.centralwidget)
-        self.backButton.setGeometry(QtCore.QRect(0, 0, 130, 25))
-        self.backButton.setMinimumSize(QtCore.QSize(130, 0))
-        self.backButton.setMaximumSize(QtCore.QSize(130, 16777215))
-        self.backButton.setCheckable(False)
-        self.backButton.setObjectName("backButton")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 640, 22))
@@ -153,7 +147,6 @@ class ManualBrewScreen(object):
         self.externalTempLabel.setText(_translate("MainWindow", "External Temperature:"))
         self.internalTempLabel.setText(_translate("MainWindow", "Internal Temperature:"))
         self.tempLabel.setText(_translate("MainWindow", "Temperatures"))
-        self.backButton.setText(_translate("MainWindow", "Back"))
 
 
 if __name__ == "__main__":
