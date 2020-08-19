@@ -8,7 +8,9 @@ int heatRelay = 4;
 int extractionPumpRelay = 5;
 int coolingPumpRelay = 6;
 
-int 
+boolean isHeating = false;
+boolean isExtractionPumping = false;
+boolean isCoolingPumping = false;
 
 void setup() {
   Serial.begin(9600);
@@ -35,11 +37,18 @@ void loop() {
     }
 
     // CHECK IF in_doc DICTIONARY HAS UPDATED COMMANDS IN IT
+    in_doc["heaterCommand"]
+    in_doc["extractionPumpCommand"]
+    in_doc["coolingPumpCommand"]
 
 
     // send out_doc dictionary to Pi
-    out_doc["1"] = "send from Arduino part 1";
-    out_doc["2"] = "send from arduino part 2";
+    out_doc["heatStatus"] = isHeating;
+    out_doc["extractionPumpStatus"] = isExtractionPumping;
+    out_doc["coolingPumpStatus"] = isCoolingPumping;
+    out_doc["internalTemp"] = -1;
+    out_doc["externalTemp"] = -1;
+  
     String out_payload;
     serializeJson(out_doc, out_payload);
 

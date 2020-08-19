@@ -1,18 +1,22 @@
-import sys, time
+import sys, time, matplotlib
+import numpy as np
 from threading import Thread
 from datetime import datetime as dt
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from functools import partial
 from PyQt5.QtGui import *
-from login_screen import *
-from main_screen import *
-from manual_brew_screen import *
-from semi_auto_brew_screen import *
+from ui.login_screen import *
+from ui.main_screen import *
+from ui.manual_brew_screen import *
+from ui.semi_auto_brew_screen import *
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 
 class BrewModel(object):
     def __init__(self):
-        self.isHeating = {"heat":False, "startTime":dt.now().replace(microsecond=0)}
+        self.isHeating = {"heat":False, "startTime":dt.now().replace(microsecond=0), "rising":False}
         self.isExtractionPumping = {"pump":False, "startTime":dt.now().replace(microsecond=0)}
         self.isCoolingPumping = {"pump":False, "startTime":dt.now().replace(microsecond=0)}
         self.isConnectedArduino = False
@@ -27,6 +31,9 @@ class BrewModel(object):
         self.userPin = None
 
         self.modeObject = None
+
+        self.startTime = dt.now().replace(microsecond=0)
+        self.timeSinceStart = 0
     
     def connectArduino(self):
         # do stuff here to connect to connect to Arduino
@@ -122,11 +129,11 @@ class ManualBrewMode(object):
     
     def _buttonTrigger(self): # this function checks the isChecked for the checkable buttons
         if (self._view.manualBrewScreen.heaterButton.isChecked() != self._model.isHeating["heat"]):
-            self._model.isHeating["startTime"] = dt.now()
+            self._model.isHeating["startTime"] = dt.now().replace(microsecond=0)
         if (self._view.manualBrewScreen.extractionPumpButton.isChecked() != self._model.isExtractionPumping["pump"]):
-            self._model.isExtractionPumping["startTime"] = dt.now()
+            self._model.isExtractionPumping["startTime"] = dt.now().replace(microsecond=0)
         if (self._view.manualBrewScreen.coolingPumpButton.isChecked() != self._model.isCoolingPumping["pump"]):
-            self._model.isCoolingPumping["startTime"] = dt.now()
+            self._model.isCoolingPumping["startTime"] = dt.now().replace(microsecond=0)
         
         self._model.isHeating["heat"] = self._view.manualBrewScreen.heaterButton.isChecked()
         self._model.isExtractionPumping["pump"] = self._view.manualBrewScreen.extractionPumpButton.isChecked()
@@ -149,9 +156,13 @@ class SemiAutoBrewMode(object):
         self._model = mdl
         self._view = vw
         self._connectButtons()
-        # self.updateDisplay()
+        
+        self.isRecording = False
+        self.timeX = np.array([])
+        self.tempY = np.array([])
+        self.recordingStartTime = 0
 
-        self.tempDelta = 4 # +/- 4 degrees before triggering on/off of heaterButton
+        self.tempDelta = 3 # +/- 3 degrees before triggering on/off of heaterButton
         
     def _connectButtons(self):
         self._view.semiAutoBrewScreen.minus10Button.clicked.connect(partial(self._changeExternalTemp, -10))
@@ -161,11 +172,12 @@ class SemiAutoBrewMode(object):
         self._view.semiAutoBrewScreen.plus5Button.clicked.connect(partial(self._changeExternalTemp, +5))
         self._view.semiAutoBrewScreen.plus10Button.clicked.connect(partial(self._changeExternalTemp, +10))
         # don't include heater button
-        self._view.semiAutoBrewScreen.heaterButton.setEnabled(False)
         self._view.semiAutoBrewScreen.extractionPumpButton.clicked.connect(self._buttonTrigger)
         self._view.semiAutoBrewScreen.coolingPumpButton.clicked.connect(self._buttonTrigger)
 
         self._view.semiAutoBrewScreen.backButton.clicked.connect(self._controller.backToMain)
+
+        self._view.semiAutoBrewScreen.recordButton.clicked.connect(self._toggleRecording)
 
     def _changeExternalTemp(self, deltaT):
         self._model.setExternalTemp += deltaT
@@ -188,30 +200,51 @@ class SemiAutoBrewMode(object):
         self._view.semiAutoBrewScreen.internalTempEdit.setText(str(self._model.internalTemp))
         
         self._view.semiAutoBrewScreen.setExternalTempEdit.setText(str(self._model.setExternalTemp))
+
+        if (self._model.isHeating["heat"]): # ensure that heaterButton serves to indicate whether heater is on or not
+            self._view.semiAutoBrewScreen.heaterButton.setChecked(True)
+        else:
+            self._view.semiAutoBrewScreen.heaterButton.setChecked(False)
     
     def _heaterControl(self):
         newHeatState = self._model.isHeating["heat"]
-        if ((self._model.setExternalTemp - self.tempDelta) < self._model.externalTemp) and \
-            ((self._model.setExternalTemp + self.tempDelta) > self._model.externalTemp):
-            # within +/- tempDelta range
+        if ((self._model.setExternalTemp - self.tempDelta) >= self._model.externalTemp):
             newHeatState = True
-        elif ((self._model.setExternalTemp - self.tempDelta) >= self._model.externalTemp):
-            # below +/- tempDelta range
-            newHeatState = False
+        elif ((self._model.setExternalTemp - self.tempDelta) <= self._model.externalTemp) and \
+            ((self._model.setExternalTemp + self.tempDelta) >= self._model.externalTemp) and \
+            (self._model.isHeating["heat"]):
+            newHeatState = True
         elif ((self._model.setExternalTemp + self.tempDelta) <= self._model.externalTemp):
-            # above +/- tempDelta range
+            newHeatState = False
+        elif ((self._model.setExternalTemp - self.tempDelta) <= self._model.externalTemp) and \
+            ((self._model.setExternalTemp + self.tempDelta) >= self._model.externalTemp) and \
+            (not self._model.isHeating["heat"]):
             newHeatState = False
         else:
-            raise "set temp case not considered"
+            raise "Temp State Error"
 
         if (newHeatState != self._model.isHeating["heat"]):
             self._model.isHeating["heat"] = newHeatState
             self._model.isHeating["startTime"] = dt.now().replace(microsecond=0)
-        
+
+    def _toggleRecording(self):
+        if (self._view.semiAutoBrewScreen.recordButton.isChecked()):
+            self.recordingStartTime = dt.now().replace(microsecond=0)
+            self.isRecording = True
+            self.recordFile = open("profile_" + str(dt.now().replace(microsecond=0)), "w+")
+            self.recordingStartTime = dt.now().replace(microsecond=0)
+        else:
+            self.isRecording = False
+            self.recordFile.close()
+    
+    def _recorder(self):
+        if (self.isRecording): # file already opened, now recording
+            self.recordFile.write(str(dt.now().replace(microsecond=0) - self.recordingStartTime) + " " + str(self._model.setExternalTemp) + "\n")
 
     def run(self):
         self._updateDisplay()
         self._heaterControl()
+        self._recorder()
 
 
 class BrewView(QMainWindow):
@@ -236,7 +269,7 @@ class BrewView(QMainWindow):
         elif (showingScreen == "semi_auto_brew_screen"):
             self._showSemiAutoBrewScreen()
         else:
-            raise "ERROR, NO SCREEN FOUND"
+            raise "No Screen Found Error"
 
     def _showLoginScreen(self):
         self.loginScreen = LoginScreen()
@@ -257,18 +290,19 @@ class BrewView(QMainWindow):
 def printAllInfo(mdl, vw, cntrllr): # debugger that prints all information
     while(True):
         #print(f"heat:{mdl.isHeating}, cool:{mdl.isCoolingPumping}, extract:{mdl.isExtractionPumping}")
-        print(f"setExternalTemp:{mdl.setExternalTemp}", end=" ")
+        print(f"time: {mdl.timeSinceStart} setExternalTemp:{mdl.setExternalTemp} realTemp: {mdl.externalTemp}", end=" ")
         heater = mdl.isHeating["heat"]
         cooling = mdl.isCoolingPumping["pump"]
         extraction = mdl.isExtractionPumping["pump"]
         print(f"heat:{heater} cooling:{cooling} extraction:{extraction}")
-        time.sleep(1)
+        time.sleep(0.5)
 
 def mainThread(mdl, vw, cntrllr):
     # calls the looping function run in the current mode
     # looping function is responsible for updating display, starting/stopping heater depending on temp, etc.
     while(True):
         time.sleep(0.05)
+        mdl.timeSinceStart = dt.now().replace(microsecond=0) - mdl.startTime
         if (mdl.modeObject != None):
             mdl.modeObject.run()
 
