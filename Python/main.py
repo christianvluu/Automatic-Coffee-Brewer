@@ -10,6 +10,7 @@ from ui.login_screen import *
 from ui.main_screen import *
 from ui.manual_brew_screen import *
 from ui.semi_auto_brew_screen import *
+from ui.profile_brew_screen import *
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -246,6 +247,15 @@ class SemiAutoBrewMode(object):
         self._heaterControl()
         self._recorder()
 
+class ProfileBrewMode(object):
+    def __init__(self, cntrllr, mdl, vw):
+        self._controller = cntrllr # weird spelling because matching name at the bottom
+        self._model = mdl
+        self._view = vw
+        self._connectButtons()
+
+        self.isRunning = False
+
 
 class BrewView(QMainWindow):
     windowXSize = 970
@@ -268,6 +278,8 @@ class BrewView(QMainWindow):
             self._showManualBrewScreen()
         elif (showingScreen == "semi_auto_brew_screen"):
             self._showSemiAutoBrewScreen()
+        elif (showingScreen == "profile_brew_screen"):
+            self._showProfileBrewScreen()
         else:
             raise "No Screen Found Error"
 
@@ -286,6 +298,10 @@ class BrewView(QMainWindow):
     def _showSemiAutoBrewScreen(self):
         self.semiAutoBrewScreen = SemiAutoBrewScreen()
         self.semiAutoBrewScreen.setupUi(view)
+
+    def _showProfileBrewScreen(self):
+        self.profileBrewSCreen = ProfileBrewScreen()
+        self.profileBrewSCreen.setupUi(view)
 
 def printAllInfo(mdl, vw, cntrllr): # debugger that prints all information
     while(True):
