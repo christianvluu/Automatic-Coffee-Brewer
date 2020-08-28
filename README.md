@@ -5,11 +5,16 @@ This project aims to provide a basic controller platform for heating chambers th
 
 Aimed at Brewing Coffee on a mass scale.
 
-## Dependencies
+## Python Dependencies
 - Python3
 - PyQt5
 - Numpy
-- Matplotlib
+- pyserial
+- (Matplotlib)
+
+## Arduino Dependencies
+- ArduinoJson
+- (some sensor reading libraries)
 
 ## Hardware
 - Raspberry Pi 3/4
