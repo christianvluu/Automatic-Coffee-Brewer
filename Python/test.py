@@ -251,55 +251,103 @@
 # input()
 # print(str(dt.now().replace(microsecond=0)))
 
-import sys
-import random
-import matplotlib
-matplotlib.use('Qt5Agg')
+# import sys
+# import random
+# import matplotlib
+# matplotlib.use('Qt5Agg')
 
-from PyQt5 import QtCore, QtWidgets
+# from PyQt5 import QtCore, QtWidgets
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
-
-class MplCanvas(FigureCanvas):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.figure import Figure
 
 
-class MainWindow(QtWidgets.QMainWindow):
+# class MplCanvas(FigureCanvas):
 
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-
-        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
-        self.setCentralWidget(self.canvas)
-
-        n_data = 50
-        self.xdata = list(range(n_data))
-        self.ydata = [random.randint(0, 10) for i in range(n_data)]
-        self.update_plot()
-
-        self.show()
-
-        # Setup a timer to trigger the redraw by calling update_plot.
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(100)
-        self.timer.timeout.connect(self.update_plot)
-        self.timer.start()
-
-    def update_plot(self):
-        # Drop off the first y element, append a new one.
-        self.ydata = self.ydata[1:] + [random.randint(0, 10)]
-        self.canvas.axes.cla()  # Clear the canvas.
-        self.canvas.axes.plot(self.xdata, self.ydata, 'r')
-        # Trigger the canvas to update and redraw.
-        self.canvas.draw()
+#     def __init__(self, parent=None, width=5, height=4, dpi=100):
+#         fig = Figure(figsize=(width, height), dpi=dpi)
+#         self.axes = fig.add_subplot(111)
+#         super(MplCanvas, self).__init__(fig)
 
 
-app = QtWidgets.QApplication(sys.argv)
-w = MainWindow()
-app.exec_()
+# class MainWindow(QtWidgets.QMainWindow):
+
+#     def __init__(self, *args, **kwargs):
+#         super(MainWindow, self).__init__(*args, **kwargs)
+
+#         self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+#         self.setCentralWidget(self.canvas)
+
+#         n_data = 50
+#         self.xdata = list(range(n_data))
+#         self.ydata = [random.randint(0, 10) for i in range(n_data)]
+#         self.update_plot()
+
+#         self.show()
+
+#         # Setup a timer to trigger the redraw by calling update_plot.
+#         self.timer = QtCore.QTimer()
+#         self.timer.setInterval(100)
+#         self.timer.timeout.connect(self.update_plot)
+#         self.timer.start()
+
+#     def update_plot(self):
+#         # Drop off the first y element, append a new one.
+#         self.ydata = self.ydata[1:] + [random.randint(0, 10)]
+#         self.canvas.axes.cla()  # Clear the canvas.
+#         self.canvas.axes.plot(self.xdata, self.ydata, 'r')
+#         # Trigger the canvas to update and redraw.
+#         self.canvas.draw()
+
+
+# app = QtWidgets.QApplication(sys.argv)
+# w = MainWindow()
+# app.exec_()
+
+# import serial
+# import json
+
+# ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+# ser.flush()
+# message = {}
+# message["isHeating"] = "true"
+# message["isExtractionPumping"] = "false"
+# message["isCoolingPumping"] = "false"
+# out_doc = json.dumps(message) # document is JSON document
+# out_payload = out_doc.encode("ascii") # payload is the encoded JSON data
+# while True:
+#     if (ser.isOpen()):
+#         ser.write(out_payload + b'\n')
+#         in_payload = ser.readline().decode('utf-8').rstrip() # need to remove the "b" at the beginning
+#         # if (in_payload != ""): # make sure there is actually data before trying to parse it
+#         #     in_doc = json.loads(in_payload)
+#         #     print(in_doc)
+
+import serial
+import json
+from datetime import datetime as dt 
+import time
+# This sends the message "part 1" and "part 2" in JSON format to Arduino and
+# reads the reply. Which is the message1 = part 2 and message2 = part 1 flipped
+
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+ser.flush()
+message = {}
+message["nowHeat"] = True
+message["nowExtract"] = False
+message["nowCool"] = True
+
+while True:
+    if (ser.is_open):
+        in_payload = ser.readline().decode('utf-8').rstrip() # need to remove the "b" at the beginning
+        
+        # SEND STUFF OUT
+        out_json_doc = json.dumps(message) # document is JSON document
+        out_payload = out_json_doc.encode("ascii") # payload is the encoded JSON data
+        ser.write(out_payload + b'\n')
+
+
+        if (in_payload != ""): # make sure there is actually data before trying to parse it
+            in_doc = json.loads(in_payload)
+            in_doc["TIME"] = dt.now().replace(microsecond=0)
+            print(in_doc)

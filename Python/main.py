@@ -1,4 +1,4 @@
-import sys, time, matplotlib
+import sys, time, matplotlib, serial, json
 import numpy as np
 from threading import Thread
 from datetime import datetime as dt
@@ -15,12 +15,13 @@ from ui.profile_brew_screen import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
+arduino_0 = None # some testing baloney here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 class BrewModel(object):
     def __init__(self):
         self.isHeating = {"heat":False, "startTime":dt.now().replace(microsecond=0), "rising":False}
         self.isExtractionPumping = {"pump":False, "startTime":dt.now().replace(microsecond=0)}
         self.isCoolingPumping = {"pump":False, "startTime":dt.now().replace(microsecond=0)}
-        self.isConnectedArduino = False
         self.showingScreen = "login_screen"
 
         self.internalTemp = -1
@@ -35,12 +36,40 @@ class BrewModel(object):
 
         self.startTime = dt.now().replace(microsecond=0)
         self.timeSinceStart = 0
+
+        self.isConnectedArduino = False
     
-    def connectArduino(self):
+class Arduino(object):
+    def __init__(self, mdl): # repeatedly call __init__ to try and reconnect arduino
+        self.outMessage = {}
+        self._model = mdl
+        self._connectArduino()
+    
+    def _connectArduino(self):
         # do stuff here to connect to connect to Arduino
-        # if success:
-            # self.isConnectedArduino = True
-        return True
+        self.ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+        self.ser.flush()
+        if (self.ser.is_open):
+            self._model.isConnectedArduino = True
+        else:
+            self._model.isConnectedArduino = False
+    
+    def sendReceive(self):
+        self._encodeOutMessage()
+        # send
+        out_json_doc = json.dumps(self.outMessage) # document is JSON document
+        out_payload = out_json_doc.encode("ascii") # payload is the encoded JSON data
+        self.ser.write(out_payload + b'\n')
+
+        # receive
+        in_payload = self.ser.readline().decode('utf-8').rstrip() # need to remove the "b" at the beginning
+        in_json_doc = json.loads(in_payload)
+        self.inMessage = in_json_doc
+    
+    def _encodeOutMessage(self):
+        self.outMessage["nowHeat"] = self._model.isHeating["heat"]
+        self.outMessage["nowCool"] = self._model.isCoolingPumping["pump"]
+        self.outMessage["nowExtract"] = self._model.isExtractionPumping["pump"]
 
 class BrewController(object):
     def __init__(self, vw, mdl):
@@ -48,6 +77,12 @@ class BrewController(object):
         self._model = mdl
         self._view.screenSelector(self._model.showingScreen)
         self._connectButtons()
+
+    def arduinoInitComm(self):
+        arduino_0 = Arduino(self._model)
+        arduino_0.outMessage["nowHeat"] = False
+        arduino_0.outMessage["nowExtract"] = False
+        arduino_0.outMessage["nowCool"] = False
     
     def _connectButtons(self):
         if (self._model.showingScreen == "login_screen"):
@@ -310,7 +345,7 @@ def printAllInfo(mdl, vw, cntrllr): # debugger that prints all information
         heater = mdl.isHeating["heat"]
         cooling = mdl.isCoolingPumping["pump"]
         extraction = mdl.isExtractionPumping["pump"]
-        print(f"heat:{heater} cooling:{cooling} extraction:{extraction}")
+        print(f"heat:{heater} cooling:{cooling} extraction:{extraction} serial:{mdl.isConnectedArduino}")
         time.sleep(0.5)
 
 def mainThread(mdl, vw, cntrllr):
@@ -320,7 +355,15 @@ def mainThread(mdl, vw, cntrllr):
         time.sleep(0.05)
         mdl.timeSinceStart = dt.now().replace(microsecond=0) - mdl.startTime
         if (mdl.modeObject != None):
-            mdl.modeObject.run()
+            mdl.modeObject.run() # this is to run after logged in AND selected mode
+        if (not mdl.isConnectedArduino):
+            print("INIT COMM")
+            cntrllr.arduinoInitComm()
+        else:
+            print("SEND RECEIVE")
+            arduino_0.sendReceive()
+            
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
