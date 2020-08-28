@@ -14,7 +14,7 @@ boolean isHeating = false;
 boolean isExtractionPumping = false;
 boolean isCoolingPumping = false;
 
-boolean trueFalseTrigger(char input) {
+boolean trueFalseParser(char input) {
   char trueVal = "true";
   char falseVal = "false";
   if (input == falseVal) {
@@ -25,6 +25,20 @@ boolean trueFalseTrigger(char input) {
   }
   else {
     //Serial.print("ERROR in reading trueFalseTrigger");
+  }
+}
+
+boolean trueFalseEncoder(boolean input) {
+  char trueVal = "true";
+  char falseVal = "false";
+  if (input == false) {
+    return falseVal;
+  }
+  else if (input == true) {
+    return trueVal;
+  }
+  else {
+    //
   }
 }
 
@@ -54,17 +68,17 @@ void loop() {
     else {
 
       // CHECK IF in_doc DICTIONARY HAS UPDATED COMMANDS IN IT
-      isHeating = trueFalseTrigger(in_doc["heaterCommand"]);
-      isExtractionPumping = trueFalseTrigger(in_doc["extractionPumpCommand"]);
-      isCoolingPumping = trueFalseTrigger(in_doc["coolingPumpCommand"]);
+      isHeating = trueFalseParser(in_doc["heaterCommand"]);
+      isExtractionPumping = trueFalseParser(in_doc["extractionPumpCommand"]);
+      isCoolingPumping = trueFalseParser(in_doc["coolingPumpCommand"]);
   
   
       // send out_doc dictionary to Pi
-      out_doc["heatStatus"] = isHeating;
-      out_doc["extractionPumpStatus"] = isExtractionPumping;
-      out_doc["coolingPumpStatus"] = isCoolingPumping;
-      out_doc["internalTemp"] = -1;
-      out_doc["externalTemp"] = -1;
+      out_doc["heatStatus"] = trueFalseEncoder(isHeating);
+      out_doc["extractionPumpStatus"] = trueFalseEncoder(isExtractionPumping);
+      out_doc["coolingPumpStatus"] = trueFalseEncoder(isCoolingPumping);
+      out_doc["internalTemp"] = "-1";
+      out_doc["externalTemp"] = "-1";
     
       String out_payload;
       serializeJson(out_doc, out_payload);
