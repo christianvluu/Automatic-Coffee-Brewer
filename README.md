@@ -1,7 +1,7 @@
 # Automatic-Coffee-Brewer
 (Under development)
 ## Introduction
-This project aims to provide a basic controller platform for heating chambers through resistive heaters. It includes data-logging, and a GUI via a touchscreen. 
+This project aims to provide a touchscreen UI and controller platform for industrial heating tanks. It includes data-logging, a touchscreen UI, user-management, and more.
 
 Aimed at Brewing Coffee on a mass scale.
 
